@@ -1,0 +1,150 @@
+﻿Option Explicit
+
+
+Private Sub CommandButton1_Click()
+
+
+'Declaring the necessary variables.
+Dim cnn As ADODB.Connection 'dim the ADO collection class
+Dim rs As ADODB.Recordset 'dim the ADO recordset class
+'Dim dbPath As String
+Dim SQL As String
+Dim i As Integer
+'Dim var As Range
+
+'add error handling
+'On Error GoTo errHandler:
+
+'Disable screen flickering.
+Application.ScreenUpdating = False
+'Clear the old data
+Sheet8.Range("A10:g1500").ClearContents
+
+'Variables
+'dbPath = Sheet1.Range("I3").Value
+'Set var = Sheet2.Range("I2")
+
+'Initialise the collection class variable
+Set cnn = New ADODB.Connection
+
+'Connection class is equipped with a —method— named Open
+'—-4 aguments—- ConnectionString, UserID, Password, Options
+'ConnectionString formula—-Key1=Value1;Key2=Value2;Key_n=Value_n;
+'cnn.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & dbPath & ";Jet OLEDB:Database Password=xxxxxx;"
+
+cnn.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=\\szdc-wfs001.na.pg.com\shared\Wspolny\ECP\E44A611.ecp;Jet OLEDB:Database Password=memento;"
+
+'Create the SQL statement to retrieve the data from table.
+'If Sheet2.Range("J2").Value = "Yes" Then
+'SQL = "SELECT * FROM PhoneList WHERE SURNAME = '" & var.Value & "'"
+'SQL = "SELECT * FROM Praca"
+
+'SQL = "SELECT DateSerial([Rok],[Miesiac],[Dzien]) AS Data, Personal.Linia, Personal.Zespol, Typy.Opis FROM (Praca LEFT JOIN Typy ON Praca.Typ = Typy.LP) LEFT JOIN Personal ON Praca.Klient = Personal.ID GROUP BY DateSerial([Rok],[Miesiac],[Dzien]), Personal.Linia, Personal.Zespol, Typy.Opis "
+'SQL = SQL & "HAVING (((DateSerial([Rok],[Miesiac],[Dzien]))=Date() Or (DateSerial([Rok],[Miesiac],[Dzien]))=Date()-1 Or (DateSerial([Rok],[Miesiac],[Dzien]))=Date()+1 Or (DateSerial([Rok],[Miesiac],[Dzien]))=Date()+2 Or (DateSerial([Rok],[Miesiac],[Dzien]))=Date()+3 Or (DateSerial([Rok],[Miesiac],[Dzien]))=Date()+4) AND  "
+'SQL = SQL & "((Personal.Linia)<4)) ORDER BY DateSerial([Rok],[Miesiac],[Dzien]); "
+
+'SQL = "SELECT DateSerial([Rok],[Miesiac],[Dzien]) AS Data, Personal.Linia, Personal.Zespol, Typy.Opis FROM (Praca LEFT JOIN Typy ON Praca.Typ = Typy.LP) LEFT JOIN Personal ON Praca.Klient = Personal.ID "
+'SQL = SQL & "GROUP BY DateSerial([Rok],[Miesiac],[Dzien]), Personal.Linia, Personal.Zespol, Typy.Opis "
+'SQL = SQL & "HAVING (((DateSerial([Rok],[Miesiac],[Dzien]))=Date() Or (DateSerial([Rok],[Miesiac],[Dzien]))=Date()-1 Or (DateSerial([Rok],[Miesiac],[Dzien]))=Date()+1 Or (DateSerial([Rok],[Miesiac],[Dzien]))=Date()+2 Or (DateSerial([Rok],[Miesiac],[Dzien]))=Date()+3 Or (DateSerial([Rok],[Miesiac],[Dzien]))=Date()+4) AND ((Personal.Linia)<4) AND ((Typy.Opis)<>""I"" And (Typy.Opis)<>""II"" And (Typy.Opis)<>""III"" And (Typy.Opis)<>""W"")) ORDER BY DateSerial([Rok],[Miesiac],[Dzien]);"
+
+'SQL = "SELECT Praca.Rok, Praca.Miesiac, Praca.Dzien, Personal.Linia, Typy.Opis FROM (Praca INNER JOIN Typy ON Praca.Typ = Typy.LP) INNER JOIN Personal ON Praca.Klient = Personal.ID GROUP BY Praca.Rok, Praca.Miesiac, Praca.Dzien, Personal.Linia, Typy.Opis "
+'SQL = SQL & "HAVING (((Praca.Rok)=Year(Date())) AND ((Praca.Miesiac)=Month(Date())) AND ((Praca.Dzien)=Day(Date()) Or (Praca.Dzien)=Day(Date())-1 Or (Praca.Dzien)=Day(Date())+1 Or (Praca.Dzien)=Day(Date())+2 Or (Praca.Dzien)=Day(Date())+3 Or (Praca.Dzien)=Day(Date())+4) AND ((Personal.Linia)<4) AND ((Typy.Opis)<>""I"" And (Typy.Opis)<>""II"" And (Typy.Opis)<>""III"" And (Typy.Opis)<>""W"")) ORDER BY Praca.Dzien; "
+
+'SQL = "SELECT Praca.Rok, Praca.Miesiac, Praca.Dzien, Personal.Linia, Praca.Typ FROM Praca INNER JOIN Personal ON Praca.Klient = Personal.ID GROUP BY Praca.Rok, Praca.Miesiac, Praca.Dzien, Personal.Linia, Praca.Typ "
+'SQL = SQL & "HAVING (((Praca.Rok) = Year(Date)) And ((Praca.Miesiac) = Month(Date)) And ((Praca.Dzien) = Day(Date) Or (Praca.Dzien) = Day(Date) - 1 Or (Praca.Dzien) = Day(Date) + 1 Or (Praca.Dzien) = Day(Date) + 2 Or (Praca.Dzien) = Day(Date) + 3 Or (Praca.Dzien) = Day(Date) + 4) And ((Personal.Linia) < 4) ) "
+'SQL = SQL & "ORDER BY Praca.Dzien; "
+
+'SQL = "SELECT Praca.Rok, Praca.Miesiac, Praca.Dzien, Personal.Linia, Praca.Typ "
+'SQL = SQL & "FROM Praca INNER JOIN Personal ON Praca.Klient = Personal.ID "
+'SQL = SQL & "GROUP BY Praca.Rok, Praca.Miesiac, Praca.Dzien, Personal.Linia, Praca.Typ "
+'SQL = SQL & "HAVING (((Praca.Rok) = 2021) And ((Praca.Miesiac) = Month(Date)) And ((Praca.Dzien) = 22) And ((Personal.Linia) < 4)) "
+
+'SQL = "SELECT Praca.Rok, Praca.Miesiac, Praca.Dzien, Personal.Linia, Praca.Typ "
+'SQL = SQL & "FROM Praca LEFT JOIN Personal ON Praca.Klient = Personal.ID "
+'SQL = SQL & "GROUP BY Praca.Rok, Praca.Miesiac, Praca.Dzien, Personal.Linia, Praca.Typ "
+'SQL = SQL & "HAVING (((Praca.Rok)=2021) AND ((Praca.Miesiac)=Month(Date())) AND ((Praca.Dzien)=22) AND ((Personal.Linia)<4)); "
+
+'SQL = "SELECT Praca.Rok, Praca.Miesiac, Praca.Dzien, Personal.Linia, Personal.Zespol, Praca.Typ "
+'SQL = SQL & "FROM Praca LEFT JOIN Personal ON Praca.Klient = Personal.ID "
+'SQL = SQL & "GROUP BY Praca.Rok, Praca.Miesiac, Praca.Dzien, Personal.Linia, Personal.Zespol, Praca.Typ "
+'SQL = SQL & "HAVING (((Praca.Rok)=2021) AND ((Praca.Miesiac)=Month(Date())) AND ((Praca.Dzien)=22) AND ((Personal.Linia)<4)); "
+
+'SQL = "SELECT Praca.Rok, Praca.Miesiac, Praca.Dzien, Personal.Linia, Personal.Zespol, Praca.Typ "
+'SQL = SQL & "FROM Praca LEFT JOIN Personal ON Praca.Klient = Personal.ID "
+'SQL = SQL & "GROUP BY Praca.Rok, Praca.Miesiac, Praca.Dzien, Personal.Linia, Personal.Zespol, Praca.Typ "
+'SQL = SQL & "HAVING (((Praca.Rok)=Year(Date())) AND ((Praca.Miesiac)=Month(Date())) AND ((Praca.Dzien) Between Day(Date())-1 And Day(Date())+4) AND ((Personal.Linia)<4)) AND ((Praca.Typ)>4)); "
+
+'SQL = "SELECT Praca.Rok, Praca.Miesiac, Praca.Dzien, Personal.Linia, Personal.Zespol, Praca.Typ "
+'SQL = SQL & "FROM Praca LEFT JOIN Personal ON Praca.Klient = Personal.ID "
+'SQL = SQL & "GROUP BY Praca.Rok, Praca.Miesiac, Praca.Dzien, Personal.Linia, Personal.Zespol, Praca.Typ "
+'SQL = SQL & "HAVING (((Praca.Rok)=Year(Date())) AND ((Praca.Miesiac)=Month(Date())) AND ((Praca.Dzien) Between Day(Date())-1 And Day(Date())+4) AND ((Personal.Linia)<4) AND ((Praca.Typ)>4)) And (Praca.Typ)<>6)); "
+
+'SQL = "SELECT Praca.Rok, Praca.Miesiac, Praca.Dzien, Personal.Linia, Personal.Zespol, Praca.Typ, Praca.Klient "
+'SQL = SQL & "FROM Praca LEFT JOIN Personal ON Praca.Klient = Personal.ID "
+'SQL = SQL & "GROUP BY Praca.Rok, Praca.Miesiac, Praca.Dzien, Personal.Linia, Personal.Zespol, Praca.Typ, Praca.Klient "
+'SQL = SQL & "HAVING (((Praca.Rok)=Year(Date())) AND ((Praca.Miesiac)=Month(Date())) AND ((Praca.Dzien) Between Day(Date())-1 And Day(Date())+4) AND ((Personal.Linia)<4) AND ((Praca.Typ)>4 And (Praca.Typ)<>6)); "
+
+'SQL = "SELECT Praca.Rok, Praca.Miesiac, Praca.Dzien, Personal.Linia, Personal.Zespol, Praca.Typ, Praca.Klient "
+'SQL = SQL & "FROM Praca LEFT JOIN Personal ON Praca.Klient = Personal.ID "
+'SQL = SQL & "GROUP BY Praca.Rok, Praca.Miesiac, Praca.Dzien, Personal.Linia, Personal.Zespol, Praca.Typ, Praca.Klient "
+'SQL = SQL & "HAVING (((Praca.Rok)=Year(Date())) AND ((Praca.Miesiac) Between Month(Date()) And Month(Date())+1) AND ((Praca.Dzien) Between Day(Date())-1 And Day(Date())+4) AND ((Personal.Linia)<4) AND ((Praca.Typ)>4 And (Praca.Typ)<>6)); "
+
+'SQL = "SELECT DateValue([Rok] & "" - "" & [Miesiac] & "" - "" & [Dzien]) AS Data, Personal.Linia, Personal.Zespol, Praca.Typ, Praca.Klient FROM Praca LEFT JOIN Personal ON Praca.Klient = Personal.ID "
+'SQL = SQL & "GROUP BY DateValue([Rok] & "" - "" & [Miesiac] & "" - "" & [Dzien]), Personal.Linia, Personal.Zespol, Praca.Typ, Praca.Klient, Weekday(DateValue([Rok] & "" - "" & [Miesiac] & "" - "" & [Dzien])), Personal.Stan "
+'SQL = SQL & "HAVING (((DateValue([Rok] & "" - "" & [Miesiac] & "" - "" & [Dzien])) Between Date()-1 And Date()+7) AND ((Personal.Linia)<4) AND ((Praca.Typ)>4 And (Praca.Typ)<>6) AND ((Weekday(DateValue([Rok] & "" - "" & [Miesiac] & "" - "" & [Dzien])))<>7 And (Weekday(DateValue([Rok] & "" - "" & [Miesiac] & "" - "" & [Dzien])))<>1)) AND ((Personal.Stan)=Yes)) "
+'SQL = SQL & "ORDER BY DateValue([Rok] & "" - "" & [Miesiac] & "" - "" & [Dzien]);"
+
+SQL = "SELECT DateValue([Rok] & "" - "" & [Miesiac] & "" - "" & [Dzien]) AS Data, Personal.Linia, Personal.Zespol, Praca.Typ, Praca.Klient FROM Praca LEFT JOIN Personal ON Praca.Klient = Personal.ID "
+SQL = SQL & "GROUP BY DateValue([Rok] & "" - "" & [Miesiac] & "" - "" & [Dzien]), Personal.Linia, Personal.Zespol, Praca.Typ, Praca.Klient, Weekday(DateValue([Rok] & "" - "" & [Miesiac] & "" - "" & [Dzien])), Personal.Stan "
+SQL = SQL & "HAVING (((DateValue([Rok] & "" - "" & [Miesiac] & "" - "" & [Dzien])) Between Date()-1 And Date()+7) AND ((Personal.Linia)<4) AND ((Praca.Typ)>4 And (Praca.Typ)<>6) AND ((Weekday(DateValue([Rok] & "" - "" & [Miesiac] & "" - "" & [Dzien])))<>7 And (Weekday(DateValue([Rok] & "" - "" & [Miesiac] & "" - "" & [Dzien])))<>1) AND ((Personal.Stan)=Yes)) ORDER BY DateValue([Rok] & "" - "" & [Miesiac] & "" - "" & [Dzien]); "
+
+
+'Else
+'SQL = "SELECT * FROM PhoneList WHERE SURNAME LIKE '" & var & "%" & "'"
+'End If
+
+'Create the ADODB recordset object.
+Set rs = New ADODB.Recordset 'assign memory to the recordset
+
+'ConnectionString Open '—-5 aguments—-
+'Source, ActiveConnection, CursorType, LockType, Options
+rs.Open SQL, cnn
+
+'Check if the recordset is empty.
+If rs.EOF And rs.BOF Then
+'Close the recordet and the connection.
+rs.Close
+cnn.Close
+'clear memory
+Set rs = Nothing
+Set cnn = Nothing
+'Enable the screen.
+Application.ScreenUpdating = True
+'In case of an empty recordset display an error.
+MsgBox "There are no records in the recordset!", vbCritical, "No Records"
+Exit Sub
+End If
+
+'Write the reocrdset values in the sheet.
+Sheet8.Range("A10").CopyFromRecordset rs
+
+'Close the recordset and the connection.
+rs.Close
+cnn.Close
+'clear memory
+Set rs = Nothing
+Set cnn = Nothing
+
+'Update the worksheet
+Application.ScreenUpdating = True
+
+'Inform the user that the macro was executed successfully.
+MsgBox "Gratulacje dane zostały zaimportowane poprawnie", vbInformation, "Import Danych"
+On Error GoTo 0
+Exit Sub
+errHandler:
+'clear memory
+Set rs = Nothing
+Set cnn = Nothing
+MsgBox "Error " & Err.Number & " (" & Err.Description & ") in procedure Import_Data"
+End Sub

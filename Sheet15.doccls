@@ -1,0 +1,224 @@
+﻿Option Explicit
+
+
+
+Private Sub Import2_Click()
+Dim cnn As ADODB.Connection 'dim the ADO collection class
+Dim rs As ADODB.Recordset 'dim the ADO recordset class
+Dim SQL, R, M, Z, ZZ, ID, E, EC As String
+Dim i, x, y, q, XX, iP As Integer
+Dim LL, W As Long
+
+'add error handling
+'On Error GoTo errHandler:
+
+'Disable screen flickering.
+Application.ScreenUpdating = False
+Application.Calculation = xlManual
+'Clear the old data
+Sheet15.Range("A7:AI60").ClearContents
+'Sheet9.Range("NR8:OG60").ClearContents
+
+R = Sheet15.Range("E2").Value
+M = Sheet15.Range("H2").Value
+'Z = Sheet14.Range("K2").Text
+
+EC = "*EECAR"
+
+'Initialise the collection class variable
+Set cnn = New ADODB.Connection
+
+cnn.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=\\szdc-wfs001.na.pg.com\shared\Wspolny\ECP\E44A611.ecp;Jet OLEDB:Database Password=memento;"
+
+'M = 12
+
+
+'SQL = "TRANSFORM First(Typy.Opis) AS FirstOfOpis SELECT Praca.Klient AS ID, Zespol.Nazwa AS Zespol, Personal.Nazwisko, Personal.Imie "
+'SQL = SQL & "FROM (((Praca INNER JOIN Personal ON Praca.Klient = Personal.ID) INNER JOIN Typy ON Praca.Typ = Typy.LP) INNER JOIN Linia ON Personal.Linia = Linia.ID) INNER JOIN Zespol ON Personal.Zespol = Zespol.ID "
+'SQL = SQL & "WHERE (((Praca.Rok)=" & R & ") AND ((Linia.Nazwa)='" & Z & "') AND ((Praca.Miesiac)=" & M & ")) GROUP BY Personal.SAPnr, Praca.Klient, Zespol.Nazwa, Personal.Nazwisko, Personal.Imie "
+'SQL = SQL & "ORDER BY Personal.Nazwisko, Personal.Imie PIVOT DateSerial([Rok],[Miesiac],[Dzien]); "
+
+'SQL = "SELECT Personal.ID, Zespol.Nazwa AS Zespół, Personal.Nazwisko, Personal.Imie FROM (Personal INNER JOIN Zespol ON Personal.Zespol = Zespol.ID) INNER JOIN Linia ON Personal.Linia = Linia.ID "
+'SQL = SQL & "WHERE (((Linia.Nazwa)='" & Z & "') AND ((Personal.Stan)=Yes)) GROUP BY Personal.ID, Zespol.Nazwa, Personal.Nazwisko, Personal.Imie ORDER BY Personal.Nazwisko, Personal.Imie; "
+
+'SQL = "SELECT Personal.ID, Linia.Nazwa AS Zmiana, Personal.Nazwisko, Personal.Imie FROM (Personal INNER JOIN Zespol ON Personal.Zespol = Zespol.ID) INNER JOIN Linia ON Personal.Linia = Linia.ID "
+'SQL = SQL & "WHERE (((Personal.Stan)=Yes)) GROUP BY Personal.ID, Linia.Nazwa, Personal.Nazwisko, Personal.Imie HAVING (((Personal.ID)=781 Or (Personal.ID)=879 Or (Personal.ID)=848 Or (Personal.ID)=813 Or (Personal.ID)=831 Or (Personal.ID)=830)) "
+'SQL = SQL & "ORDER BY Linia.Nazwa, Personal.Nazwisko, Personal.Imie; "
+
+'SQL = "SELECT Personal.ID, Linia.Nazwa AS Zmiana, Personal.Nazwisko, Personal.Imie "
+'SQL = SQL & "FROM (Personal INNER JOIN Zespol ON Personal.Zespol = Zespol.ID) INNER JOIN Linia ON Personal.Linia = Linia.ID "
+'SQL = SQL & "WHERE (((Personal.Stan) = Yes)) "
+'SQL = SQL & "GROUP BY Personal.ID, Linia.Nazwa, Zespol.Nazwa, Personal.Nazwisko, Personal.Imie "
+'SQL = SQL & "HAVING (((Zespol.Nazwa) Like ""*EECAR"")) "
+'SQL = SQL & "ORDER BY Linia.Nazwa, Personal.Nazwisko, Personal.Imie; "
+
+'SQL = "SELECT Personal.ID, Linia.Nazwa AS Zmiana, Personal.Nazwisko, Personal.Imie "
+'SQL = SQL & "FROM (Personal INNER JOIN Zespol ON Personal.Zespol = Zespol.ID) INNER JOIN Linia ON Personal.Linia = Linia.ID "
+'SQL = SQL & "WHERE (((Personal.Stan) = Yes) And ((Zespol.Nazwa) Like ""*EECAR"")) "
+'SQL = SQL & "GROUP BY Personal.ID, Linia.Nazwa, Personal.Nazwisko, Personal.Imie "
+'SQL = SQL & "ORDER BY Linia.Nazwa, Personal.Nazwisko, Personal.Imie; "
+
+SQL = "SELECT Personal.ID, Linia.Nazwa AS Zmiana, Personal.Nazwisko, Personal.Imie FROM (Personal INNER JOIN Zespol ON Personal.Zespol = Zespol.ID) INNER JOIN Linia ON Personal.Linia = Linia.ID "
+SQL = SQL & "WHERE (((Personal.Stan) = Yes) And ((Zespol.Nazwa) Like ""%EECAR"")) GROUP BY Personal.ID, Linia.Nazwa, Personal.Nazwisko, Personal.Imie ORDER BY Linia.Nazwa, Personal.Nazwisko, Personal.Imie; "
+
+
+
+'Create the ADODB recordset object.
+Set rs = New ADODB.Recordset 'assign memory to the recordset
+
+rs.Open SQL, cnn, adOpenStatic
+
+x = rs.RecordCount
+
+
+'Check if the recordset is empty.
+If rs.EOF And rs.BOF Then
+'Close the recordet and the connection.
+rs.Close
+cnn.Close
+'clear memory
+Set rs = Nothing
+Set cnn = Nothing
+'Enable the screen.
+Application.ScreenUpdating = True
+Application.Calculation = xlAutomatic
+'In case of an empty recordset display an error.
+MsgBox "Nie ma danych do wyświetlenia", vbCritical, "Brak Danych"
+Exit Sub
+End If
+
+'Write the reocrdset values in the sheet.
+'q = rs.Fields.Count
+x = 1
+rs.MoveFirst
+
+    Do Until rs.EOF = True
+        For y = 0 To 49
+        
+        If x = 1 Then
+        Sheet15.Cells(x + 6, y + 1) = rs(y).Name
+        End If
+
+            Sheet15.Cells(x + 7, y + 1) = rs(y).Value
+            On Error Resume Next
+        Next y
+        x = x + 1
+        rs.MoveNext
+    Loop
+'Close the recordset and the connection.
+rs.Close
+cnn.Close
+'clear memory
+Set rs = Nothing
+Set cnn = Nothing
+
+'2 Loop #############################################################################
+
+'For E = 1 To 1
+
+
+For W = 1 To 400 'Step -1
+ZZ = Sheets("EECAR_OP").Cells(7, W).Text
+ZZ = Trim(ZZ)
+If ZZ = "" Then
+LL = W ' + 1
+Exit For
+End If
+Next W
+
+For XX = 8 To 50
+ID = Sheet15.Cells(XX, 1).Value
+
+Set cnn = New ADODB.Connection
+
+cnn.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=\\szdc-wfs001.na.pg.com\shared\Wspolny\ECP\E44A611.ecp;Jet OLEDB:Database Password=memento;"
+
+SQL = "TRANSFORM First(Typy.Opis) AS FirstOfOpis SELECT Praca.Klient AS ID FROM (((Praca INNER JOIN Personal ON Praca.Klient = Personal.ID) INNER JOIN Typy ON Praca.Typ = Typy.LP) INNER JOIN Linia ON Personal.Linia = Linia.ID) INNER JOIN Zespol ON Personal.Zespol = Zespol.ID "
+SQL = SQL & "WHERE (((Praca.Klient)=" & ID & ") AND ((Praca.Rok)=" & R & ")  AND ((Praca.Miesiac)=" & M & ")) GROUP BY Personal.SAPnr, Praca.Klient PIVOT DateSerial([Rok],[Miesiac],[Dzien]); "
+
+
+'Create the ADODB recordset object.
+Set rs = New ADODB.Recordset 'assign memory to the recordset
+
+rs.Open SQL, cnn, adOpenStatic
+
+x = rs.RecordCount
+
+
+
+'Check if the recordset is empty.
+If rs.EOF And rs.BOF Then
+'Close the recordet and the connection.
+rs.Close
+cnn.Close
+'clear memory
+Set rs = Nothing
+Set cnn = Nothing
+'Enable the screen.
+'Application.ScreenUpdating = True
+'Application.Calculation = xlAutomatic
+'In case of an empty recordset display an error.
+'MsgBox "Nie ma danych do wyświetlenia", vbCritical, "Brak Danych"
+'Exit Sub
+'XX = XX + 1
+GoTo skok
+
+End If
+
+'Write the reocrdset values in the sheet.
+
+'wyszukac pierwsza wolną linię
+
+If Sheet15.Cells(XX, 1).Value = ID Then
+
+iP = rs.Fields.Count
+
+x = 1
+rs.MoveFirst
+    Do Until rs.EOF = True
+        For y = 0 To iP
+        
+                If XX = 8 Then
+                If x = 1 Then
+                    Sheet15.Cells(x + 6, y + LL) = rs(y + 1).Name
+                End If
+                End If
+        
+            'Sheet6.Cells(x + 7, y + LL) = rs(y).Value
+            Sheet15.Cells(XX, y + LL) = rs(y + 1).Value
+            'On Error Resume Next
+        Next y
+        x = x + 1
+        rs.MoveNext
+
+    Loop
+'Close the recordset and the connection.
+rs.Close
+cnn.Close
+'clear memory
+Set rs = Nothing
+Set cnn = Nothing
+End If
+skok:
+Next XX
+
+'Update the worksheet
+Application.ScreenUpdating = True
+Application.Calculation = xlAutomatic
+
+
+'Update the worksheet
+Application.ScreenUpdating = True
+Application.Calculation = xlAutomatic
+
+MsgBox "Gratulacje dane zostały zaimportowane poprawnie", vbInformation, "Import Danych"
+On Error GoTo 0
+Exit Sub
+errHandler:
+'clear memory
+Set rs = Nothing
+Set cnn = Nothing
+MsgBox "Error " & Err.Number & " (" & Err.Description & ") in procedure Import_Data"
+End Sub
+
+

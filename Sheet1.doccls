@@ -1,0 +1,94 @@
+﻿Option Explicit
+
+Private Sub Import1_Click()
+'Declaring the necessary variables.
+Dim cnn As ADODB.Connection 'dim the ADO collection class
+Dim rs As ADODB.Recordset 'dim the ADO recordset class
+'Dim dbPath As String
+Dim SQL As String
+Dim i As Integer
+'Dim var As Range
+
+'add error handling
+'On Error GoTo errHandler:
+
+'Disable screen flickering.
+Application.ScreenUpdating = False
+'Clear the old data
+Sheet1.Range("A10:Z10000").ClearContents
+
+'Variables
+'dbPath = Sheet1.Range("I3").Value
+'Set var = Sheet2.Range("I2")
+
+'Initialise the collection class variable
+Set cnn = New ADODB.Connection
+
+'Connection class is equipped with a —method— named Open
+'—-4 aguments—- ConnectionString, UserID, Password, Options
+'ConnectionString formula—-Key1=Value1;Key2=Value2;Key_n=Value_n;
+'cnn.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & dbPath & ";Jet OLEDB:Database Password=xxxxxx;"
+
+cnn.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=\\szdc-wfs001.na.pg.com\shared\Wspolny\ECP\E44A611.ecp;Jet OLEDB:Database Password=memento;"
+
+'Create the SQL statement to retrieve the data from table.
+'If Sheet2.Range("J2").Value = "Yes" Then
+'SQL = "SELECT * FROM PhoneList WHERE SURNAME = '" & var.Value & "'"
+'SQL = "SELECT * FROM Praca"
+
+SQL = "SELECT Organizacja.Nazwa AS Organizacja, Linia.Nazwa AS Linia, Zespol.Nazwa AS Zespol, Personal.Imie, Personal.Nazwisko, Dostep.D3 AS Pracownik, Dostep.D6 AS Lider "
+SQL = SQL & "FROM (((Personal LEFT JOIN Organizacja ON Personal.Organizacja = Organizacja.ID) LEFT JOIN Linia ON Personal.Linia = Linia.ID) LEFT JOIN Zespol ON Personal.Zespol = Zespol.ID) LEFT JOIN Dostep ON Personal.ID = Dostep.Klient "
+SQL = SQL & "WHERE (((Personal.Imie) Is Not Null) And ((Personal.Stan) = Yes)) "
+SQL = SQL & "ORDER BY Organizacja.Nazwa, Linia.Nazwa, Zespol.Nazwa, Personal.Nazwisko "
+
+
+
+'Else
+'SQL = "SELECT * FROM PhoneList WHERE SURNAME LIKE '" & var & "%" & "'"
+'End If
+
+'Create the ADODB recordset object.
+Set rs = New ADODB.Recordset 'assign memory to the recordset
+
+'ConnectionString Open '—-5 aguments—-
+'Source, ActiveConnection, CursorType, LockType, Options
+rs.Open SQL, cnn
+
+'Check if the recordset is empty.
+If rs.EOF And rs.BOF Then
+'Close the recordet and the connection.
+rs.Close
+cnn.Close
+'clear memory
+Set rs = Nothing
+Set cnn = Nothing
+'Enable the screen.
+Application.ScreenUpdating = True
+'In case of an empty recordset display an error.
+MsgBox "There are no records in the recordset!", vbCritical, "No Records"
+Exit Sub
+End If
+
+'Write the reocrdset values in the sheet.
+Sheet1.Range("A10").CopyFromRecordset rs
+
+'Close the recordset and the connection.
+rs.Close
+cnn.Close
+'clear memory
+Set rs = Nothing
+Set cnn = Nothing
+
+'Update the worksheet
+Application.ScreenUpdating = True
+
+'Inform the user that the macro was executed successfully.
+MsgBox "Gratulacje dane zostały zaimportowane poprawnie", vbInformation, "Import Danych"
+On Error GoTo 0
+Exit Sub
+errHandler:
+'clear memory
+Set rs = Nothing
+Set cnn = Nothing
+MsgBox "Error " & Err.Number & " (" & Err.Description & ") in procedure Import_Data"
+End Sub
